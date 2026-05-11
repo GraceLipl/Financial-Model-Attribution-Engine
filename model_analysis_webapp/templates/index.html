@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Model Analyzer</title>
+</head>
+<body>
+    <h1>Upload Excel Workbook</h1>
+    <form id="uploadForm" action="/" method="post" enctype="multipart/form-data">
+        <label>Select Excel File:</label><br>
+        <input type="file" id="file-input" name="workbook" required>
+    </form>
+
+    {% if warning %}
+        <p style="color: orange;"><strong>{{ warning }}</strong></p>
+    {% endif %}
+
+
+    {% if file_uploaded %}
+    <hr>
+    <h2>Select Sheet to Analyze</h2>
+    <p><strong>Uploaded file:</strong> {{ file_path.split('_', 1)[1] }}</p>
+    <form method="post">
+        <input type="hidden" name="file_path" value="{{ file_path }}">
+        <label>Sheet:</label><br>
+        <select name="sheet" required>
+            {% for sheet in sheet_options %}
+                <option value="{{ sheet }}" {% if sheet == request.form.sheet %}selected{% endif %}>{{ sheet }}</option>
+            {% endfor %}
+        </select><br><br>
+        <input type="submit" value="Next">
+    </form>
+
+    {% endif %}
+
+    {% if file_uploaded and request.form.sheet %}
+    <hr>
+    <h2>Select Variable and Period</h2>
+    <form method="post">
+        <input type="hidden" name="file_path" value="{{ file_path }}">
+        <input type="hidden" name="sheet" value="{{ request.form.sheet }}">
+
+        <label>Variable:</label><br>
+        <select name="variable" required>
+            {% for var in sheet_data[request.form.sheet]["variables"] %}
+                <option value="{{ var }}">{{ var }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <label>Period:</label><br>
+        <select name="period" required>
+            {% for p in sheet_data[request.form.sheet]["periods"] %}
+                <option value="{{ p }}">{{ p }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <input type="submit" value="Run Analysis">
+    </form>
+    {% endif %}
+
+    <script>
+        document.getElementById('file-input').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                // Auto-submit the form when file is selected
+                document.getElementById('uploadForm').submit();
+            }
+        });
+    </script>
+</body>
+</html>
